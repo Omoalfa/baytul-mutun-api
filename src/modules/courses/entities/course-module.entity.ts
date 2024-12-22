@@ -8,11 +8,11 @@ import { QuizQuestion } from './quiz-question.entity';
 })
 export class CourseModule extends Model {
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
   })
-  id: string;
+  id: number;
 
   @Column
   title: string;
@@ -67,15 +67,4 @@ export class CourseModule extends Model {
 
   @HasMany(() => QuizQuestion)
   quizQuestions: QuizQuestion[];
-
-  @Column({
-    defaultValue: true,
-  })
-  isRequired: boolean;
-
-  @Column({
-    type: DataType.ARRAY(DataType.STRING),
-    defaultValue: [],
-  })
-  prerequisites: string[]; // IDs of modules that must be completed first
 }

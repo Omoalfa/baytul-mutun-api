@@ -6,7 +6,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './entities/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UploadService } from './services/upload.service';
+import { UploadService } from '../../common/services/upload.service';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +16,7 @@ export class UsersService {
     private uploadService: UploadService,
   ) {}
 
-  async findById(id: string): Promise<User> {
+  async findById(id: number): Promise<User> {
     const user = await this.userModel.findByPk(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   async updateProfile(
-    userId: string,
+    userId: number,
     updateProfileDto: UpdateProfileDto,
     avatar?: Express.Multer.File,
   ): Promise<User> {

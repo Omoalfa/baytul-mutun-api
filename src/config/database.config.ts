@@ -11,6 +11,6 @@ export const databaseConfig: SequelizeModuleOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   autoLoadModels: true,
-  synchronize: process.env.NODE_ENV === 'development',
-  logging: process.env.NODE_ENV === 'development',
+  synchronize: true,
+  logging: true,
 };

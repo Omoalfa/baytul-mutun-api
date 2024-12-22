@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, BeforeCreate, BeforeUpdate, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, BeforeCreate, BeforeUpdate, HasMany, AfterCreate } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
@@ -19,33 +19,43 @@ export enum AuthProvider {
 })
 export class User extends Model {
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
   })
-  id: string;
+  id: number;
 
-  @Column
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   firstName: string;
 
-  @Column
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   lastName: string;
 
   @Column({
+    type: DataType.STRING,
     unique: true,
+    allowNull: false,
   })
   email: string;
 
   @Column({
+    type: DataType.STRING,
     allowNull: true,
   })
   password: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(UserRole)),
-    defaultValue: UserRole.STUDENT,
+    type: DataType.ARRAY(DataType.STRING),
+    defaultValue: [UserRole.STUDENT],
+    allowNull: false,
   })
-  role: UserRole;
+  roles: UserRole[];
 
   @Column({
     type: DataType.STRING,
@@ -54,7 +64,7 @@ export class User extends Model {
   avatar?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: true,
   })
   bio?: string;
@@ -71,7 +81,7 @@ export class User extends Model {
   isVerified: boolean;
 
   @Column({
-    type: DataType.ENUM(...Object.values(AuthProvider)),
+    type: DataType.STRING,
     defaultValue: AuthProvider.LOCAL,
   })
   provider: AuthProvider;
@@ -82,7 +92,7 @@ export class User extends Model {
   providerId?: string;
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: true,
   })
   providerData?: any;
@@ -105,11 +115,34 @@ export class User extends Model {
   })
   resetPasswordExpires?: Date;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    unique: true
+  })
+  studentId?: string;
+
+  
+  @AfterCreate
+  @BeforeUpdate
+  static async generateStudentId(instance: User) {
+    if (instance.roles.includes(UserRole.STUDENT)) {
+      const now = new Date();
+      const year = now.getFullYear().toString();
+      const month = now.getMonth() + 1;
+      const monthStr = month < 10 ? `0${month}` : month.toString();
+      const instanceIdStr = instance.id.toString();
+      const studentId = instanceIdStr.slice(-3).padStart(3, '0');
+
+      instance.studentId = `ST${year}${monthStr}${studentId}`;
+    }
+  }
+
   @BeforeCreate
   @BeforeUpdate
   static async hashPassword(instance: User) {
     if (instance.changed('password') && instance.password) {
-      const salt = await bcrypt.genSalt();
+      const salt = await bcrypt.genSalt(10);
       instance.password = await bcrypt.hash(instance.password, salt);
     }
   }
@@ -117,4 +150,5 @@ export class User extends Model {
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password);
   }
+
 }

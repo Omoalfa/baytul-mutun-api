@@ -14,11 +14,11 @@ export enum QuestionType {
 })
 export class QuizQuestion extends Model {
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
   })
-  id: string;
+  id: number;
 
   @Column(DataType.TEXT)
   question: string;

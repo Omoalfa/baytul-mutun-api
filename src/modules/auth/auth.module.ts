@@ -10,7 +10,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
 import { User } from '../users/entities/user.entity';
-import { VerificationToken } from './entities/verification-token.entity';
 import { EmailService } from './services/email.service';
 import { mailerConfig } from '../../config/mailer.config';
 
@@ -28,7 +27,7 @@ import { mailerConfig } from '../../config/mailer.config';
       inject: [ConfigService],
     }),
     MailerModule.forRoot(mailerConfig),
-    SequelizeModule.forFeature([User, VerificationToken]),
+    SequelizeModule.forFeature([User]),
   ],
   controllers: [AuthController],
   providers: [

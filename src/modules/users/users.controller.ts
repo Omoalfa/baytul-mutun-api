@@ -20,6 +20,7 @@ import {
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserParam } from '../auth/decorators/user.decorator';
 
 @ApiTags('users')
 @Controller('users')
@@ -58,10 +59,10 @@ export class UsersController {
     }),
   )
   async updateProfile(
-    @Request() req,
+    @UserParam('id') id: number,
     @Body() updateProfileDto: UpdateProfileDto,
     @UploadedFile() avatar: Express.Multer.File,
   ) {
-    return this.usersService.updateProfile(req.user.id, updateProfileDto, avatar);
+    return this.usersService.updateProfile(id, updateProfileDto, avatar);
   }
 }

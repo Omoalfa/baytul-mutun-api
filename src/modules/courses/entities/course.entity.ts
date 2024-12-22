@@ -14,11 +14,11 @@ export enum CourseLevel {
 })
 export class Course extends Model {
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
   })
-  id: string;
+  id: number;
 
   @Column
   title: string;
