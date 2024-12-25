@@ -24,16 +24,15 @@ export class InstructorEducation {
 })
 export class InstructorBio extends Model<InstructorBio> {
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id: number;
-
-  @Column({
     type: DataType.TEXT,
   })
   summary: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
+  isVerified: boolean;
 
   @Column({
     type: DataType.ARRAY(DataType.TEXT),
@@ -62,6 +61,7 @@ export class InstructorBio extends Model<InstructorBio> {
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
+    primaryKey: true,
   })
   userId: number;
 

@@ -7,7 +7,7 @@ export class UploadService {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: 'profile-pictures',
+          folder: 'assets',
         },
         (error, result) => {
           if (error) return reject(error);

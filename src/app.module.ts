@@ -11,6 +11,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { RoleGuard } from './modules/auth/guards/role.guard';
 import { User } from './modules/users/entities/user.entity';
 import { UsersModule } from './modules/users/users.module';
+import { CoursesModule } from './modules/courses/courses.module';
+import { InstructorModule } from './modules/instructors/instructor.module';
 
 @Module({
   imports: [
@@ -24,7 +26,9 @@ import { UsersModule } from './modules/users/users.module';
     }),
     SequelizeModule.forFeature([User]),
     AuthModule,
-    UsersModule
+    UsersModule,
+    CoursesModule,
+    InstructorModule
   ],
   controllers: [AppController],
   providers: [

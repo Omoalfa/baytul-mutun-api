@@ -20,7 +20,7 @@ export class InstructorService {
     });
   }
 
-  async findById(id: number, type: 'user' | 'bio') {
-    return this.instructorBioModel.findOne({ where: (type === 'user' ? { userId: id } : { id }) });
+  async findById(id: number) {
+    return this.instructorBioModel.findByPk(id);
   }
 }

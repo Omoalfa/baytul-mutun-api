@@ -4,12 +4,11 @@ import { InstructorService } from '../instructor.service';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
-export class UserExistConstraint implements ValidatorConstraintInterface {
+export class InstructorExistConstraint implements ValidatorConstraintInterface {
   constructor(private readonly instructorService: InstructorService) {}
 
-  async validate(instructorId: number, args: any) {
-    const [type] = args.constraints;
-    const instructor = await this.instructorService.findById(instructorId, type);
+  async validate(instructorId: number) {
+    const instructor = await this.instructorService.findById(instructorId);
     return !!instructor; // returns true if the user exists, false otherwise
   }
 
@@ -18,14 +17,13 @@ export class UserExistConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export function InstructorExist(type: 'user' | 'bio', validationOptions?: ValidationOptions) {
+export function InstructorExist(validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
-      constraints: [type],
-      validator: UserExistConstraint,
+      validator: InstructorExistConstraint,
     });
   };
 }

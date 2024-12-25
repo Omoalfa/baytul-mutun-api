@@ -36,10 +36,9 @@ export class QuizQuestion extends Model {
   options: string[];
 
   @Column({
-    type: DataType.ARRAY(DataType.INTEGER),
-    defaultValue: [],
+    type: DataType.ARRAY(DataType.STRING),
   })
-  correctAnswers: number[]; // Array for multiple choice questions
+  correctAnswer: string[]; // Array for multiple choice questions
 
   @Column({
     type: DataType.INTEGER,
@@ -59,8 +58,8 @@ export class QuizQuestion extends Model {
   isActive: boolean;
 
   @ForeignKey(() => CourseModule)
-  @Column(DataType.UUID)
-  moduleId: string;
+  @Column(DataType.INTEGER)
+  moduleId: number;
 
   @BelongsTo(() => CourseModule)
   module: CourseModule;

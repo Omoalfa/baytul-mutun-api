@@ -59,8 +59,8 @@ export class CourseModule extends Model {
   attachments: string[];
 
   @ForeignKey(() => Course)
-  @Column(DataType.UUID)
-  courseId: string;
+  @Column(DataType.INTEGER)
+  courseId: number;
 
   @BelongsTo(() => Course)
   course: Course;

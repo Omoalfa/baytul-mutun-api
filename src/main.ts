@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import { UserContextInterceptor } from './common/interceptors/user-context.interceptor';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,16 +14,20 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Set up class-validator to use NestJS's container
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
   // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
-  );
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
+  }));
+
+  // Global interceptors
+  app.useGlobalInterceptors(new UserContextInterceptor());
 
   // Swagger documentation setup
   const config = new DocumentBuilder()

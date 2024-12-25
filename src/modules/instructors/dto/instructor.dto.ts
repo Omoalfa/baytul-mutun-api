@@ -68,17 +68,13 @@ export class UpdateInstructorBioDto {
 export class InstructorBioParamDto {
   @ApiProperty()
   @IsInt()
-  @InstructorExist('bio', {
-    message: 'Invalid instructor id',
-  })
+  @InstructorExist()
   id: number;
 }
 
 export class InstructorUserParamDto {
   @ApiProperty()
   @IsInt()
-  @InstructorExist('user', {
-    message: 'Invalid instructor id',
-  })
+  @InstructorExist()
   id: number;
 }

@@ -1,11 +1,18 @@
-import { Table, Column, Model, DataType, BelongsTo, ForeignKey, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, BelongsTo, ForeignKey, HasMany, BeforeCreate } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
 import { CourseModule } from './course-module.entity';
+import { InstructorBio } from '../../instructors/entities/InstructorBio.entity';
 
 export enum CourseLevel {
-  BEGINNER = 'Beginner',
-  INTERMEDIATE = 'Intermediate',
-  ADVANCED = 'Advanced',
+  BEGINNER = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+}
+
+export enum ECourseStatus {
+  DRAFT = 'draft',
+  ONGOING = 'ongoing',
+  COMPLETED = 'completed',
 }
 
 @Table({
@@ -32,10 +39,13 @@ export class Course extends Model {
   })
   level: CourseLevel;
 
-  @Column
-  duration: string;
+  @Column(DataType.INTEGER)
+  duration: number;
 
-  @Column(DataType.DECIMAL(10, 2))
+  @Column({ type: DataType.INTEGER, defaultValue: 0 })
+  enrolledStudents: number;
+
+  @Column({ type: DataType.DECIMAL(10, 2), defaultValue: 0 })
   price: number;
 
   @Column({
@@ -44,13 +54,13 @@ export class Course extends Model {
   image: string;
 
   @Column({
-    defaultValue: true,
+    defaultValue: false,
   })
   isPublished: boolean;
 
   @ForeignKey(() => User)
-  @Column(DataType.UUID)
-  instructorId: string;
+  @Column(DataType.INTEGER)
+  instructorId: number;
 
   @BelongsTo(() => User)
   instructor: User;
@@ -83,6 +93,21 @@ export class Course extends Model {
   })
   reviewCount: number;
 
+  @Column({
+    type: DataType.ENUM(...Object.values(ECourseStatus)),
+    defaultValue: ECourseStatus.DRAFT,
+  })
+  status: ECourseStatus;
+
   @HasMany(() => CourseModule)
   modules: CourseModule[];
+
+  @BeforeCreate
+  static  setDefaultPublishedStatus(instance: Course) {
+    if (instance.isPublished) {
+      instance.status = ECourseStatus.ONGOING;
+    } else {
+      instance.status = ECourseStatus.DRAFT;
+    }
+  }
 }
