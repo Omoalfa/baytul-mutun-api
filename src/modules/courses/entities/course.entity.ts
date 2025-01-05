@@ -1,7 +1,6 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey, HasMany, BeforeCreate } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
 import { CourseModule } from './course-module.entity';
-import { InstructorBio } from '../../instructors/entities/InstructorBio.entity';
 
 export enum CourseLevel {
   BEGINNER = 'BEGINNER',
@@ -44,6 +43,9 @@ export class Course extends Model {
 
   @Column({ type: DataType.INTEGER, defaultValue: 0 })
   enrolledStudents: number;
+
+  @Column({ type: DataType.INTEGER, defaultValue: 0 })
+  moduleCount: number;
 
   @Column({ type: DataType.DECIMAL(10, 2), defaultValue: 0 })
   price: number;

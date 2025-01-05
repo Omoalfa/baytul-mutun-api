@@ -9,12 +9,16 @@ import { CoursesModule } from "../courses/courses.module";
 import { UploadService } from "src/common/services/upload.service";
 import { CoursesService } from "../courses/courses.service";
 import { QuizQuestion } from "../courses/entities/quiz-question.entity";
+import { UserCourseModule } from "../courses/entities/user-course-module.entity";
+import { EnrolledCourses } from "../courses/entities/enrolled-courses.entity";
 
 @Module({
     controllers: [InstructorController],
     providers: [InstructorService, UploadService, CoursesService],
     imports: [
-        SequelizeModule.forFeature([InstructorBio, Course, CourseModule, QuizQuestion]),
+        SequelizeModule.forFeature([
+            InstructorBio, Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses
+        ]),
         CoursesModule
     ],
     exports: [InstructorService]

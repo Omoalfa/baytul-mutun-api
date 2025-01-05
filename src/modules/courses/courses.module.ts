@@ -6,21 +6,23 @@ import { CourseController } from "./course.controller";
 import { CoursesService } from "./courses.service";
 import { QuizQuestion } from "./entities/quiz-question.entity";
 import { UploadService } from "src/common/services/upload.service";
-import { UniqueTitleValidator } from "./validators/unique-title.validator";
-import { IsCourseExistConstraint } from "./validators/course-exist.validator";
-import { IsModuleExistConstraint } from "./validators/module-exist.validator";
+import ValidationConstraints from "./validators";
+import { UserCourseModule } from "./entities/user-course-module.entity";
+import { EnrolledCourses } from "./entities/enrolled-courses.entity";
+import { InstructorBio } from "../instructors/entities/InstructorBio.entity";
+import { InstructorModule } from "../instructors/instructor.module";
 
 @Module({
     imports: [
-        SequelizeModule.forFeature([Course, CourseModule, QuizQuestion]),
+        SequelizeModule.forFeature([
+            Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses, InstructorBio
+        ]),
     ],
     controllers: [CourseController],
     providers: [
         CoursesService,
         UploadService,
-        UniqueTitleValidator,
-        IsCourseExistConstraint,
-        IsModuleExistConstraint
+        ...ValidationConstraints
     ],
     exports: [CoursesService]
 })

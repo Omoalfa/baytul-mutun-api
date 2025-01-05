@@ -1,7 +1,7 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
 import { CourseModule } from './course-module.entity';
 
-export enum QuestionType {
+export enum EQuestionType {
   SINGLE_CHOICE = 'single_choice',
   MULTIPLE_CHOICE = 'multiple_choice',
   TRUE_FALSE = 'true_false',
@@ -24,10 +24,10 @@ export class QuizQuestion extends Model {
   question: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(QuestionType)),
-    defaultValue: QuestionType.SINGLE_CHOICE,
+    type: DataType.ENUM(...Object.values(EQuestionType)),
+    defaultValue: EQuestionType.SINGLE_CHOICE,
   })
-  type: QuestionType;
+  type: EQuestionType;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING),

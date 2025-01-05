@@ -2,13 +2,15 @@ import { CourseLevel, ECourseStatus } from "../entities/course.entity";
 import { IsString, IsEnum, IsNumber, IsOptional, IsUrl, IsArray, ArrayMinSize, IsInt, IsObject, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsUniqueTitle } from '../validators/unique-title.validator';
-import { QuestionType } from "../entities/quiz-question.entity";
+import { EQuestionType } from "../entities/quiz-question.entity";
 import { ValidateCorrectAnswers, ValidateOptions } from "../validators/quiz-question.validator";
 import { IsCourseExist } from "../validators/course-exist.validator";
 import { Type } from "class-transformer";
 import { ValidateNested } from 'class-validator';
 import { IsModuleExist } from "../validators/module-exist.validator";
 import { User } from "src/modules/users/entities/user.entity";
+import { IsUserEnrolled } from "../validators/enrolled-course.validator";
+import { IsMyCourse } from "../validators/my-course-exist.validator";
 
 export class CreateCourseDto {
   @IsOptional()
@@ -70,9 +72,9 @@ export class CreateQuizQuestionDto {
   @ApiProperty()
   question: string;
 
-  @IsEnum(QuestionType)
+  @IsEnum(EQuestionType)
   @ApiProperty()
-  type: QuestionType;
+  type: EQuestionType;
 
   @IsArray()
   @IsString({ each: true })
@@ -140,6 +142,29 @@ export class CourseParamDto {
   id: number;
 }
 
+export class CourseEnrollParamDto {
+  @IsOptional()
+  @Type(() => User)
+  currentUser?: User;
+
+  @ApiProperty()
+  @IsInt()
+  @IsCourseExist("public")
+  @IsUserEnrolled()
+  id: number;
+}
+
+export class MyCourseParamDto {
+  @IsOptional()
+  @Type(() => User)
+  currentUser?: User;
+
+  @ApiProperty()
+  @IsInt()
+  @IsMyCourse()
+  id: number;
+}
+
 export class InstructorCourseParamDto {
   @IsOptional()
   @Type(() => User)
@@ -165,4 +190,42 @@ export class InstructorModuleParamDto {
   @IsInt()
   @IsModuleExist()
   moduleId: number;
+}
+
+export class MyModuleParamDto {
+  @IsOptional()
+  @Type(() => User)
+  currentUser?: User;
+
+  @ApiProperty()
+  @IsInt()
+  @IsMyCourse()
+  courseId: number;
+
+  @ApiProperty()
+  @IsInt()
+  @IsModuleExist()
+  moduleId: number;
+}
+
+export class QuizAnswerDto {
+  @ApiProperty()
+  @IsInt()
+  @IsModuleExist()
+  questionId: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsArray()
+  @ArrayMinSize(1)
+  answers: string[];
+}
+
+export class QuizAnswersDto {
+  @ApiProperty({ type: [QuizAnswerDto] })
+  @IsArray()
+  @ArrayMinSize(5)
+  @Type(() => CreateQuizQuestionDto)
+  @ValidateNested({ each: true })
+  data: QuizAnswerDto[]
 }

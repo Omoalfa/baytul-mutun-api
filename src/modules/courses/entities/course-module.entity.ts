@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey, HasMany } from 'sequelize-typescript';
 import { Course } from './course.entity';
 import { QuizQuestion } from './quiz-question.entity';
+import { EnrolledCourses } from './enrolled-courses.entity';
 
 @Table({
   tableName: 'course_modules',
@@ -67,4 +68,7 @@ export class CourseModule extends Model {
 
   @HasMany(() => QuizQuestion)
   quizQuestions: QuizQuestion[];
+
+  @HasMany(() => EnrolledCourses)
+  enrolledCourses: EnrolledCourses[];
 }
