@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator } from 'class-validator';
 import { CoursesService } from '../courses.service';
-import { User } from 'src/modules/users/entities/user.entity';
+import { User } from 'src/modules/users/models/user.model';
 
 @ValidatorConstraint({ name: 'UniqueTitle', async: true })
 @Injectable()

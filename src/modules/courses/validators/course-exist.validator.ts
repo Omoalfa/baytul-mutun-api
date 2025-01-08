@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator } from 'class-validator';
 import { CoursesService } from '../courses.service';
-import { Course } from '../entities/course.entity';
-import { User } from 'src/modules/users/entities/user.entity';
+import { Course } from '../models/course.model';
+import { User } from 'src/modules/users/models/user.model';
 
 @ValidatorConstraint({ name: 'CourseExist', async: true })
 @Injectable()
@@ -13,6 +13,7 @@ export class IsCourseExistConstraint implements ValidatorConstraintInterface {
 
     async validate(id: number, args: ValidationArguments) {
         const type = args.constraints[0];
+        console.log(id);
 
         let course: Course;
 

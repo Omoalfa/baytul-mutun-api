@@ -9,7 +9,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
-import { User } from '../users/entities/user.entity';
+import { User } from '../users/models/user.model';
 import { EmailService } from './services/email.service';
 import { mailerConfig } from '../../config/mailer.config';
 

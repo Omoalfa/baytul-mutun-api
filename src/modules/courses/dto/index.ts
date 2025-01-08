@@ -1,16 +1,16 @@
-import { CourseLevel, ECourseStatus } from "../entities/course.entity";
 import { IsString, IsEnum, IsNumber, IsOptional, IsUrl, IsArray, ArrayMinSize, IsInt, IsObject, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsUniqueTitle } from '../validators/unique-title.validator';
-import { EQuestionType } from "../entities/quiz-question.entity";
+import { EQuestionType } from "../models/quiz-question.model";
 import { ValidateCorrectAnswers, ValidateOptions } from "../validators/quiz-question.validator";
 import { IsCourseExist } from "../validators/course-exist.validator";
-import { Type } from "class-transformer";
 import { ValidateNested } from 'class-validator';
 import { IsModuleExist } from "../validators/module-exist.validator";
-import { User } from "src/modules/users/entities/user.entity";
+import { User } from "src/modules/users/models/user.model";
 import { IsUserEnrolled } from "../validators/enrolled-course.validator";
 import { IsMyCourse } from "../validators/my-course-exist.validator";
+import { CourseLevel, ECourseStatus } from '../models/course.model';
 
 export class CreateCourseDto {
   @IsOptional()
@@ -137,6 +137,7 @@ export class CreateCourseModuleDto {
 
 export class CourseParamDto {
   @ApiProperty()
+  @Type(() => Number)
   @IsInt()
   @IsCourseExist("public")
   id: number;

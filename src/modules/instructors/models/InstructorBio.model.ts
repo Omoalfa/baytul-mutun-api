@@ -1,5 +1,5 @@
 import { Table, Column, DataType, ForeignKey, BelongsTo, Model } from 'sequelize-typescript';
-import { User } from 'src/modules/users/entities/user.entity';
+import { User } from 'src/modules/users/models/user.model';
 
 export class InstructorExperience {
   organization: string;
@@ -19,7 +19,7 @@ export class InstructorEducation {
 }
 
 @Table({
-  tableName: 'instructor_bio',
+  tableName: 'instructor_bios',
   timestamps: true,
 })
 export class InstructorBio extends Model<InstructorBio> {
@@ -47,7 +47,7 @@ export class InstructorBio extends Model<InstructorBio> {
   education: InstructorEducation[];
 
   @Column({
-    type: DataType.JSONB,
+    type: DataType.ARRAY(DataType.JSONB),
     defaultValue: [],
   })
   experience: InstructorExperience[];

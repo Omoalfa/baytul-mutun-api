@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateInstructorBioDto, UpdateInstructorBioDto } from './dto/instructor.dto';
-import { InstructorBio } from './entities/InstructorBio.entity';
+import { InstructorBio } from './models/InstructorBio.model';
 
 @Injectable()
 export class InstructorService {

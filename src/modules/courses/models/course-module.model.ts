@@ -1,7 +1,7 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey, HasMany } from 'sequelize-typescript';
-import { Course } from './course.entity';
-import { QuizQuestion } from './quiz-question.entity';
-import { EnrolledCourses } from './enrolled-courses.entity';
+import { Course } from './course.model';
+import { QuizQuestion } from './quiz-question.model';
+import { EnrolledCourses } from './enrolled-courses.model';
 
 @Table({
   tableName: 'course_modules',
@@ -35,11 +35,6 @@ export class CourseModule extends Model {
     defaultValue: 0,
   })
   duration: number; // in minutes
-
-  @Column({
-    defaultValue: false,
-  })
-  isPublished: boolean;
 
   @Column({
     type: DataType.STRING,

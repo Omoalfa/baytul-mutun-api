@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from './entities/user.entity';
+import { User } from './models/user.model';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadService } from '../../common/services/upload.service';
 

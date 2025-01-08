@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
-import { CourseModule } from './course-module.entity';
+import { CourseModule } from './course-module.model';
 
 export enum EQuestionType {
   SINGLE_CHOICE = 'single_choice',
@@ -38,13 +38,13 @@ export class QuizQuestion extends Model {
   @Column({
     type: DataType.ARRAY(DataType.STRING),
   })
-  correctAnswer: string[]; // Array for multiple choice questions
+  correctAnswers: string[]; // Array for multiple choice questions
 
   @Column({
     type: DataType.INTEGER,
     defaultValue: 1,
   })
-  points: number;
+  point: number;
 
   @Column({
     type: DataType.TEXT,
@@ -53,6 +53,7 @@ export class QuizQuestion extends Model {
   explanation?: string; // Explanation for the correct answer
 
   @Column({
+    type: DataType.BOOLEAN,
     defaultValue: true,
   })
   isActive: boolean;

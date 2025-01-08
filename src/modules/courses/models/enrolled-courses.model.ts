@@ -1,8 +1,8 @@
 import { BelongsTo, Column, DataType, ForeignKey, HasMany, HasOne, Model, Table } from "sequelize-typescript";
-import { Course } from "./course.entity";
-import { User } from "src/modules/users/entities/user.entity";
-import { UserCourseModule } from "./user-course-module.entity";
-import { CourseModule } from "./course-module.entity";
+import { Course } from "./course.model";
+import { User } from "src/modules/users/models/user.model";
+import { UserCourseModule } from "./user-course-module.model";
+import { CourseModule } from "./course-module.model";
 
 @Table({
     tableName: "enrolled_courses",

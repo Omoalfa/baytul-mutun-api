@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey, HasMany, BeforeCreate } from 'sequelize-typescript';
-import { User } from '../../users/entities/user.entity';
-import { CourseModule } from './course-module.entity';
+import { CourseModule } from './course-module.model';
+import { User } from 'src/modules/users/models/user.model';
 
 export enum CourseLevel {
   BEGINNER = 'BEGINNER',
@@ -47,13 +47,18 @@ export class Course extends Model {
   @Column({ type: DataType.INTEGER, defaultValue: 0 })
   moduleCount: number;
 
-  @Column({ type: DataType.DECIMAL(10, 2), defaultValue: 0 })
+  @Column({ type: DataType.INTEGER, defaultValue: 0 })
   price: number;
 
   @Column({
     allowNull: true,
   })
   image: string;
+
+  @Column({
+    allowNull: true,
+  })
+  imagePublicId: string;
 
   @Column({
     defaultValue: false,
@@ -78,11 +83,6 @@ export class Course extends Model {
     defaultValue: [],
   })
   objectives: string[];
-
-  @Column({
-    defaultValue: 0,
-  })
-  enrollmentCount: number;
 
   @Column({
     type: DataType.FLOAT,

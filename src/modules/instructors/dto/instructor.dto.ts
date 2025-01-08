@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsArray, ValidateNested, IsInt } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { InstructorEducation, InstructorExperience } from '../entities/InstructorBio.entity';
+import { InstructorEducation, InstructorExperience } from '../models/InstructorBio.model';
 import { InstructorExist } from '../validators/instructor-exist.validator';
 
 export class CreateInstructorBioDto {

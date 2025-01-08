@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import Roles from "src/common/decorators/role.decorator";
-import { User, UserRole } from "../users/entities/user.entity";
+import { User, UserRole } from "../users/models/user.model";
 import { InstructorService } from "./instructor.service";
 import { CreateInstructorBioDto, InstructorBioParamDto, InstructorUserParamDto, UpdateInstructorBioDto } from "./dto/instructor.dto";
 import { UserParam } from "../auth/decorators/user.decorator";

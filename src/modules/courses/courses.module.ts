@@ -1,28 +1,28 @@
 import { Module } from "@nestjs/common";
-import { Course } from "./entities/course.entity";
 import { SequelizeModule } from "@nestjs/sequelize";
-import { CourseModule } from "./entities/course-module.entity";
-import { CourseController } from "./course.controller";
+import { CourseController } from "./courses.controller";
 import { CoursesService } from "./courses.service";
-import { QuizQuestion } from "./entities/quiz-question.entity";
+import { CourseModule } from "./models/course-module.model";
+import { QuizQuestion } from "./models/quiz-question.model";
 import { UploadService } from "src/common/services/upload.service";
 import ValidationConstraints from "./validators";
-import { UserCourseModule } from "./entities/user-course-module.entity";
-import { EnrolledCourses } from "./entities/enrolled-courses.entity";
-import { InstructorBio } from "../instructors/entities/InstructorBio.entity";
-import { InstructorModule } from "../instructors/instructor.module";
+import { InstructorBio } from "../instructors/models/InstructorBio.model";
+import { User } from "../users/models/user.model";
+import { Course } from "./models/course.model";
+import { UserCourseModule } from "./models/user-course-module.model";
+import { EnrolledCourses } from "./models/enrolled-courses.model";
 
 @Module({
     imports: [
         SequelizeModule.forFeature([
-            Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses, InstructorBio
+            Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses, InstructorBio, User
         ]),
     ],
     controllers: [CourseController],
     providers: [
         CoursesService,
         UploadService,
-        ...ValidationConstraints
+        ...ValidationConstraints,
     ],
     exports: [CoursesService]
 })

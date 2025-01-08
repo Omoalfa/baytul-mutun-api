@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
-import { EQuestionType } from '../entities/quiz-question.entity';
+import { EQuestionType } from '../models/quiz-question.model';
 
 export function ValidateOptions(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {

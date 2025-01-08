@@ -1,7 +1,7 @@
-import { BeforeCreate, BeforeSave, BeforeUpdate, BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
-import { EnrolledCourses } from "./enrolled-courses.entity";
-import { CourseModule } from "./course-module.entity";
-import { User } from "src/modules/users/entities/user.entity";
+import { BeforeSave, BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { EnrolledCourses } from "./enrolled-courses.model";
+import { CourseModule } from "./course-module.model";
+import { User } from "src/modules/users/models/user.model";
 
 export enum EStudentModuleStatus {
     IN_PROGRESS = 'in_progress',
@@ -9,7 +9,7 @@ export enum EStudentModuleStatus {
 }
 
 @Table({
-    tableName: 'user_course_module',
+    tableName: 'user_course_modules',
     timestamps: true,
 })
 export class UserCourseModule extends Model<UserCourseModule> {
@@ -22,7 +22,7 @@ export class UserCourseModule extends Model<UserCourseModule> {
     id: number;
 
     @Column({
-        type: DataType.JSONB,
+        type: DataType.ARRAY(DataType.JSONB),
         allowNull: true,
     })
     attemptedQuestions: {

@@ -2,15 +2,15 @@ import { Module } from "@nestjs/common";
 import { InstructorController } from "./instructor.controller";
 import { InstructorService } from "./instructor.service";
 import { SequelizeModule } from "@nestjs/sequelize";
-import { InstructorBio } from "./entities/InstructorBio.entity";
-import { Course } from "../courses/entities/course.entity";
-import { CourseModule } from "../courses/entities/course-module.entity";
+import { InstructorBio } from "./models/InstructorBio.model";
+import { CourseModule } from "../courses/models/course-module.model";
 import { CoursesModule } from "../courses/courses.module";
 import { UploadService } from "src/common/services/upload.service";
 import { CoursesService } from "../courses/courses.service";
-import { QuizQuestion } from "../courses/entities/quiz-question.entity";
-import { UserCourseModule } from "../courses/entities/user-course-module.entity";
-import { EnrolledCourses } from "../courses/entities/enrolled-courses.entity";
+import { QuizQuestion } from "../courses/models/quiz-question.model";
+import { EnrolledCourses } from "../courses/models/enrolled-courses.model";
+import { UserCourseModule } from "../courses/models/user-course-module.model";
+import { Course } from "../courses/models/course.model";
 
 @Module({
     controllers: [InstructorController],

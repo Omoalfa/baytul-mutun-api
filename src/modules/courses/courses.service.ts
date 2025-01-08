@@ -1,18 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { InjectConnection, InjectModel } from "@nestjs/sequelize";
-import { Course, ECourseStatus } from "./entities/course.entity";
-import { User } from "../users/entities/user.entity";
 import { UploadService } from "../../common/services/upload.service";
 import { CreateCourseDto, CreateCourseModuleDto, CreateQuizQuestionDto, QuizAnswerDto } from "./dto";
 import { Op } from "sequelize";
-import { CourseModule } from "./entities/course-module.entity";
-import { EQuestionType, QuizQuestion } from "./entities/quiz-question.entity";
+import { CourseModule } from "./models/course-module.model";
+import { EQuestionType, QuizQuestion } from "./models/quiz-question.model";
 import { PaginatedResponse, PaginationDto } from "src/common/dto/pagination.dto";
-import { InstructorBio } from "../instructors/entities/InstructorBio.entity";
-import { EnrolledCourses } from "./entities/enrolled-courses.entity";
+import { InstructorBio } from "../instructors/models/InstructorBio.model";
+import { EnrolledCourses } from "./models/enrolled-courses.model";
 import { ConflictException } from "@nestjs/common";
-import { UserCourseModule } from "./entities/user-course-module.entity";
 import { Sequelize } from "sequelize-typescript";
+import { UserCourseModule } from "./models/user-course-module.model";
+import { Course, ECourseStatus } from "./models/course.model";
+import { User } from "../users/models/user.model";
 
 @Injectable()
 export class CoursesService {
@@ -86,6 +86,11 @@ export class CoursesService {
             where,
             offset,
             limit,
+            include: [{
+                as: 'instructor',
+                model: User,
+                attributes: ['id', 'firstName', 'lastName', 'email', 'avatar']
+            }],
             order: [
                 ['createdAt', 'DESC']
             ]
@@ -122,7 +127,7 @@ export class CoursesService {
     
     async findCourseById(id: number): Promise<Course> {
         return await this.courseModel.findByPk(id, {
-            attributes: ['id', 'title', 'description', 'image', 'price', 'createdAt'],
+            attributes: ['id', 'title', 'description', 'moduleCount', 'duration', 'enrolledStudents', 'image', 'price', 'createdAt', 'prerequisites', 'objectives', 'status'],
             include: [{
                 as: 'instructor',
                 model: User,
@@ -235,9 +240,15 @@ export class CoursesService {
 
     async findEnrolledCoursesByStudentId(studentId: number, options: PaginationDto): Promise<PaginatedResponse<EnrolledCourses>> {
         const { rows: courses, count: total } = await this.enrolledCoursesModel.findAndCountAll({ 
-            where: { studentId, course: { title: { [Op.iLike]: `%${options.search ?? ""}%` } } }, 
-            include: [{ model: Course, attributes: ['id', 'title', 'description', 'image', 'price', 'createdAt'] }], 
-            attributes: ["id", "studentId", "courseId", "grade", "progress"],
+            where: { 
+                studentId,
+                '$course.title$': { [Op.iLike]: `%${options.search || ''}%` }
+            }, 
+            include: [{ 
+                model: Course, 
+                attributes: ['id', 'title', 'description', 'image', 'price', 'createdAt'] 
+            }], 
+            attributes: ["id", "studentId", "courseId", "grade", "progress", "currentModuleId"],
             limit: options.limit,
             offset: (options.page - 1) * options.limit
         });
@@ -248,7 +259,7 @@ export class CoursesService {
             data: courses,
             limit: options.limit,
             totalPages: Math.ceil(total / options.limit)
-        }
+        };
     }
 
     async findEnrolledStudentsByCourseId(courseId: number, options: PaginationDto): Promise<PaginatedResponse<EnrolledCourses>> {
@@ -282,7 +293,10 @@ export class CoursesService {
             include: [
                 { 
                     model: Course, 
-                    attributes: ['id', 'title', 'description', 'image'] 
+                    attributes: ['id', 'title', 'description', 'image'],
+                    include: [
+                        { model: CourseModule, attributes: ['id', 'title', 'description', 'order'] }
+                    ]
                 },
                 {
                     model: UserCourseModule,
@@ -292,34 +306,57 @@ export class CoursesService {
         });
     }
 
-    async getRandomQuestionsForUserModule (user: User, courseId: number, moduleId: number): Promise<{ module: UserCourseModule, created: boolean }> {
+    async fetchMyModuleDetails (user: User, moduleId: number): Promise<UserCourseModule> {
+        const [module, created] = await this.userCourseModuleModel.findOrCreate({ 
+            where: { moduleId, studentId: user.id },
+            defaults: {
+                moduleId, studentId: user.id
+            },
+            include: [
+                {
+                    model: CourseModule,
+                    attributes: ['id', 'order', 'title', 'audioUrl', 'videoUrl', 'attachments', 'description']
+                }
+            ] 
+        });
+
+        return module
+    }
+
+    async getRandomQuestionsForUserModule (user: User, courseId: number, moduleId: number): Promise<QuizQuestion[]> {
         const t = await this.sequelize.transaction();
         
         try {
             const quizQuestions = await this.quizQuestionModel.findAll({ 
                 where: { moduleId, courseId },
+                order: this.sequelize.random(),
+                limit: 5,
                 transaction: t 
             });
 
-            const randomQuestions = quizQuestions.sort(() => Math.random() - 0.5).slice(0, 5);
-
-            const [module, created] = await this.userCourseModuleModel.findOrCreate({
-                where: { moduleId, studentId: user.id },
-                defaults: {
-                    moduleId,
-                    studentId: user.id,
-                    attemptedQuestions: randomQuestions.map(question => ({
+            await this.userCourseModuleModel.update(
+                {
+                    attemptedQuestions: quizQuestions.map(question => ({
                         questionId: question.id,
                         userAnswer: null,
                         isCorrect: null,
                         attemptedAt: new Date()
                     }))
                 },
-                transaction: t
-            });
+                {
+                    where: { moduleId, studentId: user.id },
+                    transaction: t
+                }
+            );
 
             await t.commit();
-            return { module, created };
+            return  quizQuestions.map(question => {
+                    return {
+                        ...question,
+                        correctAnswers: [],
+                        explanation: ''
+                    } as QuizQuestion;
+                });
         } catch (err) {
             await t.rollback();
             throw err;
@@ -329,9 +366,9 @@ export class CoursesService {
     isAnswerCorrect = (question: QuizQuestion, userAnswer: string[]): boolean => {
         switch (question.type) {
             case EQuestionType.MULTIPLE_CHOICE:
-                return question.correctAnswer.every(answer => userAnswer.includes(answer)) && userAnswer.length === question.correctAnswer.length;
+                return question.correctAnswers.every(answer => userAnswer.includes(answer)) && userAnswer.length === question.correctAnswers.length;
             case EQuestionType.TRUE_FALSE || EQuestionType.SHORT_ANSWER || EQuestionType.SINGLE_CHOICE:
-                return question.correctAnswer[0] === userAnswer[0] && userAnswer.length === 1;
+                return question.correctAnswers[0] === userAnswer[0] && userAnswer.length === 1;
             default:
                 return true;
         }
