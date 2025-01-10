@@ -11,11 +11,12 @@ import { User } from "../users/models/user.model";
 import { Course } from "./models/course.model";
 import { UserCourseModule } from "./models/user-course-module.model";
 import { EnrolledCourses } from "./models/enrolled-courses.model";
+import { CourseFinalExam } from "./models/course-final-exam.model";
 
 @Module({
     imports: [
         SequelizeModule.forFeature([
-            Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses, InstructorBio, User
+            Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses, InstructorBio, User, CourseFinalExam
         ]),
     ],
     controllers: [CourseController],

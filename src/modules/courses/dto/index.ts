@@ -212,13 +212,11 @@ export class MyModuleParamDto {
 export class QuizAnswerDto {
   @ApiProperty()
   @IsInt()
-  @IsModuleExist()
   questionId: number;
 
   @ApiProperty()
-  @IsString()
   @IsArray()
-  @ArrayMinSize(1)
+  @IsString({ each: true }) 
   answers: string[];
 }
 
@@ -226,7 +224,7 @@ export class QuizAnswersDto {
   @ApiProperty({ type: [QuizAnswerDto] })
   @IsArray()
   @ArrayMinSize(5)
-  @Type(() => CreateQuizQuestionDto)
+  @Type(() => QuizAnswerDto)
   @ValidateNested({ each: true })
   data: QuizAnswerDto[]
 }

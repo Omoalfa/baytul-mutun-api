@@ -10,9 +10,10 @@ import { InstructorBio } from "../instructors/models/InstructorBio.model";
 import { EnrolledCourses } from "./models/enrolled-courses.model";
 import { ConflictException } from "@nestjs/common";
 import { Sequelize } from "sequelize-typescript";
-import { UserCourseModule } from "./models/user-course-module.model";
+import { EStudentModuleStatus, UserCourseModule } from "./models/user-course-module.model";
 import { Course, ECourseStatus } from "./models/course.model";
 import { User } from "../users/models/user.model";
+import { CourseFinalExam } from "./models/course-final-exam.model";
 
 @Injectable()
 export class CoursesService {
@@ -24,6 +25,7 @@ export class CoursesService {
         @InjectModel(CourseModule) private readonly courseModuleModel: typeof CourseModule,
         @InjectModel(InstructorBio) private readonly instructorBioModel: typeof InstructorBio,
         @InjectModel(EnrolledCourses) private readonly enrolledCoursesModel: typeof EnrolledCourses,
+        @InjectModel(CourseFinalExam) private readonly courseFinalExamModel: typeof CourseFinalExam,
         @InjectConnection() private readonly sequelize: Sequelize, 
     ) {}
 
@@ -216,15 +218,16 @@ export class CoursesService {
         const t = await this.sequelize.transaction();
         
         try {
-            const course = await this.enrolledCoursesModel.create(
-                { courseId, studentId: user.id },
+            const module = await this.courseModuleModel.findOne({ where: { courseId, order: 1 } });
+            const userCourse = await this.enrolledCoursesModel.create(
+                { courseId, studentId: user.id, currentModuleId: module.id },
                 { transaction: t }
             );
 
             await this.courseModel.increment('enrolledStudents', { by: 1, where: { id: courseId }, transaction: t });
             
             await t.commit();
-            return course;
+            return userCourse;
         } catch (error) {
             await t.rollback();
             if (error.name === 'SequelizeUniqueConstraintError') {
@@ -241,12 +244,14 @@ export class CoursesService {
     async findEnrolledCoursesByStudentId(studentId: number, options: PaginationDto): Promise<PaginatedResponse<EnrolledCourses>> {
         const { rows: courses, count: total } = await this.enrolledCoursesModel.findAndCountAll({ 
             where: { 
-                studentId,
-                '$course.title$': { [Op.iLike]: `%${options.search || ''}%` }
+                studentId
             }, 
             include: [{ 
                 model: Course, 
-                attributes: ['id', 'title', 'description', 'image', 'price', 'createdAt'] 
+                where: options.search ? {
+                    title: { [Op.iLike]: `%${options.search}%` }
+                } : undefined,
+                attributes: ['id', 'title', 'description', 'image', 'price', 'createdAt'],
             }], 
             attributes: ["id", "studentId", "courseId", "grade", "progress", "currentModuleId"],
             limit: options.limit,
@@ -295,22 +300,25 @@ export class CoursesService {
                     model: Course, 
                     attributes: ['id', 'title', 'description', 'image'],
                     include: [
-                        { model: CourseModule, attributes: ['id', 'title', 'description', 'order'] }
+                        { model: CourseModule, attributes: ['id', 'title', 'description', 'order'] },
+                        { model: User, attributes: ['id', 'firstName', 'lastName', 'email', 'avatar'] }
                     ]
                 },
                 {
                     model: UserCourseModule,
-                    attributes: ['id', 'moduleId', 'studentId', 'grade', 'progress', 'status', 'totalScore', 'quizGrade'],
+                    attributes: ['id', 'moduleId', 'studentId', 'moduleGrade', 'status', 'totalScore', 'maxPossibleScore'],
                 }
             ]
         });
     }
 
-    async fetchMyModuleDetails (user: User, moduleId: number): Promise<UserCourseModule> {
+    async fetchMyModuleDetails (user: User, moduleId: number, courseId?: number): Promise<UserCourseModule> {
+        const userCourse = await this.enrolledCoursesModel.findOne({ where: { studentId: user.id, courseId } });
+        
         const [module, created] = await this.userCourseModuleModel.findOrCreate({ 
             where: { moduleId, studentId: user.id },
             defaults: {
-                moduleId, studentId: user.id
+                moduleId, studentId: user.id, courseId: userCourse.id
             },
             include: [
                 {
@@ -328,7 +336,7 @@ export class CoursesService {
         
         try {
             const quizQuestions = await this.quizQuestionModel.findAll({ 
-                where: { moduleId, courseId },
+                where: { moduleId },
                 order: this.sequelize.random(),
                 limit: 5,
                 transaction: t 
@@ -352,7 +360,7 @@ export class CoursesService {
             await t.commit();
             return  quizQuestions.map(question => {
                     return {
-                        ...question,
+                        ...question.dataValues,
                         correctAnswers: [],
                         explanation: ''
                     } as QuizQuestion;
@@ -399,7 +407,8 @@ export class CoursesService {
             const module = await this.userCourseModuleModel.update({
                 attemptedQuestions: userAnswers,
                 maxPossibleScore,
-                totalScore
+                totalScore,
+                status: EStudentModuleStatus.COMPLETED
             }, {
                 where: {
                     moduleId,
@@ -411,7 +420,7 @@ export class CoursesService {
 
             const course = await this.enrolledCoursesModel.findOne({ 
                 where: { studentId: user.id, courseId },
-                attributes: ["progress", "grade", "id"],
+                attributes: ["progress", "grade", "id", "currentModuleId"],
                 include: [
                     { 
                         model: Course, 
@@ -429,13 +438,17 @@ export class CoursesService {
                 order: [['order', 'ASC']],
                 transaction: t
             });
-            const currentModule = courseModules.find(module => module.id === course.currentModuleId);
-            const nextModule = courseModules.find(module => module.order === currentModule.order + 1);
+
+            console.log(course.dataValues.currentModuleId);
+
+            const currentModule = courseModules.find(module => module.dataValues.id === course.currentModuleId);
+            const nextModule = courseModules.find(module => module.dataValues.order === currentModule.dataValues.order + 1);
 
             await this.enrolledCoursesModel.update({
                grade: course.grade + ((100 / course.course.moduleCount) * (module[1][0].dataValues.moduleGrade / 100)),
-               progress: course.progress + ((100 / course.course.moduleCount + 1)),
-               currentModuleId: nextModule ? nextModule.id : null
+               progress: Math.ceil(course.progress + ((100 / course.course.moduleCount + 1))),
+               currentModuleId: nextModule ? nextModule.dataValues.id : null,
+               
             }, {
                 where: {
                     studentId: user.id,
@@ -451,5 +464,101 @@ export class CoursesService {
             await t.rollback();
             throw err;
         }
+    }
+  
+  
+    async estimateFinalGrade(id: number, finalExamGrade: number): Promise<number> {
+      const totalModuleGrade = await this.userCourseModuleModel.sum('moduleGrade', { where: { courseId: id } });
+      return (totalModuleGrade * 0.4) + (finalExamGrade * 0.6);
+    }
+
+    async generateExam(user: User, courseId: number): Promise<QuizQuestion[]> {
+      return this.sequelize.transaction(async (transaction) => {
+         
+        // Get enrolled course with modules
+        const enrolledCourse = await this.enrolledCoursesModel.findOne({
+          where: { studentId: user.id, courseId },
+          transaction
+        });
+  
+        // Collect all quiz questions from all modules
+        const quizQuestions = await this.quizQuestionModel.findAll({ 
+            where: { courseId },
+            order: this.sequelize.random(),
+            limit: 50,
+            transaction
+        });
+  
+        // Create the exam
+        const exam = await this.courseFinalExamModel.upsert({
+          enrolledCourseId: enrolledCourse.id,
+          attemptedQuestions: quizQuestions.map((q) => ({ questionId: q.id, userAnswer: [], isCorrect: null })),
+          score: null,
+          submittedAt: null
+        }, { 
+            transaction,
+            returning: true,
+        });
+  
+        return quizQuestions.map(question => {
+          return {
+            ...question.dataValues,
+            correctAnswers: [],
+            explanation: ''
+          } as QuizQuestion;
+        });
+      });
+    }
+  
+    async submitExam(
+      user: User,
+      courseId: number,
+      answers: QuizAnswerDto[]
+    ): Promise<CourseFinalExam> {
+      return this.sequelize.transaction(async (transaction) => {
+        // Get enrolled course with modules
+        const enrolledCourse = await this.enrolledCoursesModel.findOne({
+          where: { studentId: user.id, courseId },
+          transaction
+        });
+
+        const exam = await this.courseFinalExamModel.findOne({ where: { enrolledCourseId: enrolledCourse.id }, transaction });
+        let score = 0;
+        let total = 0;
+        // Process answers and calculate score
+        const attemptedQuestions = Promise.all(answers.map(async answer => {
+          const question = await this.quizQuestionModel.findByPk(answer.questionId, { transaction });
+          const isCorrect = this.isAnswerCorrect(question, answer.answers);
+
+          if (isCorrect) {
+            score++
+          }
+
+          total++
+  
+          return {
+            questionId: answer.questionId,
+            moduleId: question.moduleId,
+            answer: answer.answers,
+            isCorrect
+          };
+        }));
+  
+        // Update exam
+        const updatedExam = await exam.update({
+          attemptedQuestions,
+          score,
+          submittedAt: new Date(),
+        }, { transaction });
+  
+        await this.enrolledCoursesModel.update({
+          grade: await this.estimateFinalGrade(courseId, updatedExam.score),
+        }, { 
+            where: { studentId: user.id, courseId }, 
+            transaction 
+        });
+
+        return exam;
+      });
     }
 }

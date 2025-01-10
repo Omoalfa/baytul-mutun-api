@@ -14,6 +14,7 @@ export class IsModuleExistConstraint implements ValidatorConstraintInterface {
         const courseId = (args.object as any).courseId
         
         const course = await this.coursesService.findModuleByCourseIdAndId(id, courseId);
+        
         return !!course;
     }
 

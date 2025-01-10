@@ -11,13 +11,14 @@ import { QuizQuestion } from "../courses/models/quiz-question.model";
 import { EnrolledCourses } from "../courses/models/enrolled-courses.model";
 import { UserCourseModule } from "../courses/models/user-course-module.model";
 import { Course } from "../courses/models/course.model";
+import { CourseFinalExam } from "../courses/models/course-final-exam.model";
 
 @Module({
     controllers: [InstructorController],
     providers: [InstructorService, UploadService, CoursesService],
     imports: [
         SequelizeModule.forFeature([
-            InstructorBio, Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses
+            InstructorBio, Course, CourseModule, QuizQuestion, UserCourseModule, EnrolledCourses, CourseFinalExam
         ]),
         CoursesModule
     ],

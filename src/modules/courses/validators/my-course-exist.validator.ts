@@ -13,6 +13,7 @@ export class IsMyCourseConstraint implements ValidatorConstraintInterface {
     async validate(id: number, args: ValidationArguments) {
         const user = (args.object as any).currentUser as User;
         const course = await this.coursesService.findEnrolledCoursesByUserIdAndCourseId(user.id, id);
+        console.log(course, "module validation");
         return !!course;
     }
 

@@ -11,7 +11,8 @@ export class EnrolledCourseConstraint implements ValidatorConstraintInterface {
 
     async validate(id: number, args: ValidationArguments) {
         const course = await this.coursesService.findEnrolledCoursesByUserIdAndCourseId((args.object as any).currentUser.id, id);
-        return !!course;
+        
+        return !course;
     }
 
     defaultMessage(args: ValidationArguments) {

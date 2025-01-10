@@ -47,7 +47,7 @@ export class CourseController {
         @Param() param: MyModuleParamDto,
         @UserParam() user: User
     ) {
-        return await this.courseService.fetchMyModuleDetails(user, param.moduleId);
+        return await this.courseService.fetchMyModuleDetails(user, param.moduleId, param.courseId);
     }
 
     @Roles(UserRole.STUDENT)
@@ -66,7 +66,27 @@ export class CourseController {
         @Body() { data: answers }: QuizAnswersDto,
         @UserParam() user: User
     ) {
+        console.log(param);
         return await this.courseService.submitQuiz(user, param.courseId, param.moduleId, answers);
+    }
+
+    @Roles(UserRole.STUDENT)
+    @Post('my/:id/exam/generate')
+    async generateExam(
+        @Param() param: MyCourseParamDto,
+        @UserParam() user: User
+    ) {
+        return this.courseService.generateExam(user, param.id);
+    }
+
+    @Roles(UserRole.STUDENT)
+    @Post('my/:id/exam/submit')
+    async submitExam(
+        @Param() param: MyCourseParamDto,
+        @UserParam() user: User,
+        @Body() { data: answers }: QuizAnswersDto,
+    ) {
+        return this.courseService.submitExam(user, param.id, answers);
     }
 
     @Public()
